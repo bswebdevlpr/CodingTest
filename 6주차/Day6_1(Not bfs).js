@@ -1,54 +1,63 @@
 // 코딩테스트 연습
 // 깊이/너비 우선 탐색(DFS/BFS)
 // 게임 맵 최단거리
+// RangeError: Maximum call stack size exceeded
 
 function solution(maps) {
-
     const goal = [maps.length-1, maps[0].length-1];
     
-    let answerArr = [];
+    function Node (prev, pos) {
+        this.prev = prev;
+        this.pos = pos;
+    };
+    let start = new Node(null, [0, 0]);
+    let finList = [];
+    let failList = [];
     
-    
-    let i = 0;
-    
-    function findRoute(prev, xPos, yPos, amount, history){
+    function createRoute(present, len){
+        const xPos = present.pos[0];
+        const yPos = present.pos[1];
+        
         if(xPos == goal[0] && yPos == goal[1]){
-            answerArr.push(amount+1);
-            // console.log("정답: ");
-            // for(let elem of history){
-            //     console.log(elem, "=>");
-            // }
-            // console.log("카운트="+amount);
+            finList.push([present, len]);
             return;
         }
-        // history.push([xPos, yPos]);
-        // console.log("prev="+prev, [xPos, yPos], "=>");
         
-        // 표 범위를 벗어나지 않고, 길이며, 이전 위치가 아니라면 이동
-        if(xPos < maps.length && maps[xPos+1][yPos] == 1 && !(xPos+1 == prev[0] && yPos == prev[1])){
-            prev = [xPos, yPos];
-            findRoute(prev, xPos+1, yPos, amount+1, history);
-        } 
-        if(yPos < maps[0].length && maps[xPos][yPos+1] == 1 && !(xPos == prev[0] && yPos+1 == prev[1])){
-            prev = [xPos, yPos];
-            findRoute(prev, xPos, yPos+1, amount+1, history);
-        } 
-        if(xPos > 0 && maps[xPos-1][yPos] == 1 && !(xPos-1 == prev[0] && yPos == prev[1])){
-            prev = [xPos, yPos];
-            findRoute(prev, xPos-1, yPos, amount+1, history);
-        } 
-        if(yPos > 0 && maps[xPos][yPos-1] == 1 && !(xPos == prev[0] && yPos-1 == prev[1])){
-            prev = [xPos, yPos];
-            findRoute(prev, xPos, yPos-1, amount+1, history);
+        let newNode1 = null;
+        let newNode2 = null;
+        let newNode3 = null;
+        let newNode4 = null;
+        
+        // 표의 범위를 벗어나지 않으면서 길이면 tree에 할당.
+        if(xPos < maps.length && maps[xPos+1][yPos] == 1){
+            newNode1 = new Node(present, [xPos+1, yPos]);
+            createRoute(newNode1, len + 1);
         }
-        console.log("막힘!", history);
-        return;
+        if(yPos < maps[0].length && maps[xPos][yPos+1] == 1 ){
+            newNode2 = new Node(present, [xPos, yPos+1]);
+            createRoute(newNode2, len + 1);
+        } 
+        if(xPos > 0 && maps[xPos-1][yPos] == 1){
+            newNode3 = new Node(present, [xPos-1, yPos]);
+            createRoute(newNode3, len + 1);
+        } 
+        if(yPos > 0 && maps[xPos][yPos-1] == 1){
+            newNode4 = new Node(present, [xPos, yPos-1]);
+            createRoute(newNode4, len + 1);
+        }
+        if(!(newNode1 || newNode2 || newNode3 || newNode4)){
+            failList.push([present, len]);
+            return;
+        }
+        
     }
     
-    findRoute([-1, -1], 0, 0, 0, []);
-    console.log(answerArr);
+    createRoute(start, 1);
+    console.log("finList: ", finList);
+    console.log("failList: ", failList);
     
-    return answer = 0;
+    let answer = -1;
+    return answer;
 }
 
 solution([[1, 0, 1, 1, 1], [1, 0, 1, 0, 1], [1, 0, 1, 1, 1], [1, 1, 1, 0, 1], [0, 0, 0, 0, 1]]);
