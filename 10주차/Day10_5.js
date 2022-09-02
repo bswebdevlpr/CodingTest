@@ -6,9 +6,10 @@
 function solution(jobs) {
     /*
         1. 하드디스크가 작업을 수행하지 않고 있을 때에는 먼저 요청이 들어온 작업부터 처리한다.
+            1.1) 작업이 끝난 시점에 들어온 요청을 요청 array에 넣어준다.
         2. 하드디스크가 작업을 수행하고 있을 때,
             2.1) 수행하고 있는 작업이 끝나는 시점까지 들어온 요청을 스택에 오름차순으로 정렬한다.
-            2.2) 2.1을 반복하고 stack이 없다면 1으로 돌아간다.
+            2.2) 2.1을 반복하고 stack이 없다면 1으로 돌아간다. 
     */
     
     let requested = [];
@@ -16,8 +17,15 @@ function solution(jobs) {
     let time = 0;
     let amount = 0;
     
+    jobs = jobs.sort((a, b) => {
+        if(a[0] !== b[0]) return a[0] - b[0];
+        else return a[1] - b[1];
+    });
     let jobIdx = jobs.map((job, index) => {
-       return {start: job[0], cost: job[1], realCost: 0, index: index} 
+       return {start: job[0], cost: job[1], realCost: 0, index: index}
+        /*
+            - realCost: 실제로 작업이 시작된 시점부터 끝난 시점까지 걸린 시간.
+        */
     });
     
     // console.log(jobIdx);
@@ -26,7 +34,7 @@ function solution(jobs) {
     function inputRequest(){
         let inputCnt = 0;
         for(let i=0; i<jobIdx.length; i++){
-            if(jobIdx[i].start < nowWork.realCost){
+            if(jobIdx[i].start < nowWork.start + nowWork.realCost){
                 inputCnt++;
             } else break;
         }
@@ -37,7 +45,11 @@ function solution(jobs) {
         }
     }
     
-    while(jobIdx.length > 0 || nowWork){
+    while(jobIdx.length > 0 || nowWork || requested.length > 0){
+        if(jobIdx.length === 0 && requested.length === 0 && nowWork) {
+            amount += nowWork.realCost;
+            break;
+        }
         if(!nowWork){
             if(requested.length > 1){
                 let first = jobs.length;
@@ -53,14 +65,20 @@ function solution(jobs) {
                 let head = requested.slice(0, idx);
                 let rear = requested.slice(idx+1, requested.length);
                 requested = head.concat(rear);
+                
                 nowWork.realCost = (time - nowWork.start) + nowWork.cost;
                 
             } else if(requested.length === 1){
                 nowWork = requested.shift();
                 nowWork.realCost = (time - nowWork.start) + nowWork.cost;
+                
             } else{
-                nowWork = jobIdx.shift();
-                nowWork.realCost = (time - nowWork.start) + nowWork.cost;
+                // jobIdx에서 start가 time과 같은 job을 search.
+                // 있으면 requested에 넣고 스타트, 없으면 패스.
+                if(jobIdx[0].start === time){
+                    nowWork = jobIdx.shift();
+                    nowWork.realCost = nowWork.cost;
+                }
             }
         } else {
             // 현재 작업하고 있는 요청이 끝나는 시점이면 
@@ -72,22 +90,31 @@ function solution(jobs) {
                 // 끝나는 시점에 들어오는 요청도 넣어줌.
                 inputRequest();
                 
-                requested = requested.map(job => {
-                    job.realCost = (time - job.start) + job.cost;
-                    return job;
-                });
-                requested = requested.sort((a, b) => a.realCost - b.realCost);
-                nowWork = requested.shift();
+                // requested = requested.map(job => {
+                //     job.realCost = (time - job.start) + job.cost;
+                //     return job;
+                // });
+                if(requested.length > 0){
+                    requested = requested.sort((a, b) => {
+                        if(a.cost !== b.cost) return a.cost - b.cost;
+                        else return a.index - b.index;
+                    });
+                    nowWork = requested.shift();
+                    nowWork.realCost = (time - nowWork.start) + nowWork.cost;
+                } else{
+                    nowWork = null;
+                }
                 
             } else {
                 inputRequest();
             }
         }
-        
-        time++;
         // console.log("time="+time) 
+        // console.log("amount="+amount);
         // console.log("nowWork: ", nowWork)
         // console.log("requested: ", requested, '\n');
+        
+        time++;
     }
     
     
