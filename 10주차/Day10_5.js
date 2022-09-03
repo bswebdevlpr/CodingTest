@@ -2,7 +2,6 @@
 // 힙(Heap)
 // 디스크 컨트롤러
 
-
 function solution(jobs) {
     /*
         1. 하드디스크가 작업을 수행하지 않고 있을 때에는 먼저 요청이 들어온 작업부터 처리한다.
@@ -33,8 +32,9 @@ function solution(jobs) {
     // jobIdx에서 조건에 해당하는 job을 shift하여 requested에 push.
     function inputRequest(){
         let inputCnt = 0;
+        let workingTime = nowWork.start + nowWork.realCost;
         for(let i=0; i<jobIdx.length; i++){
-            if(jobIdx[i].start < nowWork.start + nowWork.realCost){
+            if(jobIdx[i].start < workingTime){
                 inputCnt++;
             } else break;
         }
@@ -44,6 +44,10 @@ function solution(jobs) {
             inputCnt--;
         }
     }
+    
+    nowWork = jobIdx.shift();
+    nowWork.realCost = nowWork.cost;
+    time = nowWork.start;
     
     while(jobIdx.length > 0 || nowWork || requested.length > 0){
         if(jobIdx.length === 0 && requested.length === 0 && nowWork) {
@@ -73,27 +77,14 @@ function solution(jobs) {
                 nowWork.realCost = (time - nowWork.start) + nowWork.cost;
                 
             } else{
-                // jobIdx에서 start가 time과 같은 job을 search.
-                // 있으면 requested에 넣고 스타트, 없으면 패스.
-                if(jobIdx[0].start === time){
-                    nowWork = jobIdx.shift();
-                    nowWork.realCost = nowWork.cost;
-                }
+                nowWork = jobIdx.shift();
+                nowWork.realCost = nowWork.cost;
+                time = nowWork.start;
             }
         } else {
-            // 현재 작업하고 있는 요청이 끝나는 시점이면 
-            // 1) 각각의 realCost를 계산하고 
-            // 2) requested를 sort하고 최소값을 nowWork에 넣어줌.
             if(time === nowWork.start + nowWork.realCost){
                 amount += nowWork.realCost;
                 
-                // 끝나는 시점에 들어오는 요청도 넣어줌.
-                inputRequest();
-                
-                // requested = requested.map(job => {
-                //     job.realCost = (time - job.start) + job.cost;
-                //     return job;
-                // });
                 if(requested.length > 0){
                     requested = requested.sort((a, b) => {
                         if(a.cost !== b.cost) return a.cost - b.cost;
@@ -102,19 +93,19 @@ function solution(jobs) {
                     nowWork = requested.shift();
                     nowWork.realCost = (time - nowWork.start) + nowWork.cost;
                 } else{
-                    nowWork = null;
+                    nowWork = jobIdx.shift();
+                    nowWork.realCost = nowWork.cost;
+                    time = nowWork.start;
                 }
-                
-            } else {
-                inputRequest();
             }
         }
+        
+        inputRequest();
         // console.log("time="+time) 
         // console.log("amount="+amount);
         // console.log("nowWork: ", nowWork)
         // console.log("requested: ", requested, '\n');
-        
-        time++;
+        time += nowWork.cost;
     }
     
     
