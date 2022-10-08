@@ -1,3 +1,5 @@
+// 중복 안되는줄 알고 착각함
+
 function solution(n, s) {
     var answer = [];
     
