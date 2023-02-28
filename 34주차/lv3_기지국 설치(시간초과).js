@@ -1,3 +1,5 @@
+// 단순 for loop
+
 function solution(n, stations, w) {
   /*
   IDEAS
