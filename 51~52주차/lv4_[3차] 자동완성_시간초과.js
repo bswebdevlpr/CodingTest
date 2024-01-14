@@ -1,3 +1,4 @@
+// n^3
 function solution(words) {
   let ret = 0;
 
