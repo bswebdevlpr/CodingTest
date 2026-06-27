@@ -7,6 +7,10 @@
 class MinHeap {
   heap = [];
 
+  constructor(nums) {
+    this.heap = nums.sort((b, a) => b - a);
+  }
+
   reindex() {
     let p = 0;
 
